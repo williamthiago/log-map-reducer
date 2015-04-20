@@ -16,13 +16,18 @@ object LogMapReducer {
 		val allInputs = inputs.mkString(",")
 
 		val records = sc.textFile(allInputs)
+			// transforma em (data (userid, registro)) para ordenar por data antes de agrupar por userid (1 unica ordenação)
 		 	.map(transform)
+		 	// ordenando pela data/hora
             .sortByKey()
+            // transforma em (userid, registro) desprezando a data
             .map(line => line._2)
+            // salva os arquivos na saida, separado por userid
             .saveAsHadoopFile(output, classOf[String], classOf[String], classOf[RDDMultipleTextOutputFormat[String,String]])
     }
 
 	def transform(record: String): (java.util.Date, (String, String)) = {
+		// "- Parsear o arquivo não é o ponto do exercício, assuma todas as simplificações"
 		var dateAsString = record.split('[')(1).split(']')(0)
 		var userid = record.split("userid=")(1).split('"')(0)
 		val formatter = new java.text.SimpleDateFormat("dd/MMM/yyyy:hh:mm:ss ZZ", java.util.Locale.US)
