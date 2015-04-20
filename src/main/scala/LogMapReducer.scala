@@ -6,6 +6,7 @@ import org.apache.hadoop.io.NullWritable
 import org.apache.spark.rdd._
 import org.apache.hadoop.mapred.lib.MultipleTextOutputFormat
 
+import org.apache.spark._
 import scala.collection.mutable.ArrayBuffer
 
 object LogMapReducer {
@@ -22,6 +23,8 @@ object LogMapReducer {
             .sortByKey()
             // transforma em (userid, registro) desprezando a data
             .map(line => line._2)
+            // reparticiona para garantir 1 partition por key
+            .partitionBy(new HashPartitioner(10000))
             // salva os arquivos na saida, separado por userid
             .saveAsHadoopFile(output, classOf[String], classOf[String], classOf[RDDMultipleTextOutputFormat[String,String]])
     }
